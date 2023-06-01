@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/entity"
 )
 
 // DefCommander used to execute command

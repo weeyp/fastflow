@@ -7,15 +7,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/render"
-	"github.com/shiningrush/fastflow/pkg/utils/value"
+	"github.com/weeyp/fastflow/pkg/render"
+	"github.com/weeyp/fastflow/pkg/utils/value"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/shiningrush/fastflow/pkg/entity"
-	"github.com/shiningrush/fastflow/pkg/entity/run"
-	"github.com/shiningrush/fastflow/pkg/event"
-	"github.com/shiningrush/fastflow/pkg/log"
 	"github.com/shiningrush/goevent"
+	"github.com/weeyp/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/entity/run"
+	"github.com/weeyp/fastflow/pkg/event"
+	"github.com/weeyp/fastflow/pkg/log"
 )
 
 const (

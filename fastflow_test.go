@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/entity"
-	"github.com/shiningrush/fastflow/pkg/mod"
-	"github.com/shiningrush/fastflow/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/weeyp/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/mod"
+	"github.com/weeyp/fastflow/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/shiningrush/fastflow/store"
 	"github.com/stretchr/testify/assert"
+	"github.com/weeyp/fastflow/store"
 )
 
 func TestBaseInfo_Initial(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/shiningrush/fastflow
+module github.com/weeyp/fastflow
 
 go 1.20
 
@@ -8,10 +8,8 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/prometheus/client_golang v1.14.0
 	github.com/shiningrush/goevent v0.1.0
-	github.com/sony/sonyflake v1.0.0
 	github.com/spaolacci/murmur3 v1.1.0
 	github.com/stretchr/testify v1.6.1
-	go.mongodb.org/mongo-driver v1.5.4
 	gopkg.in/yaml.v3 v3.0.0
 )
 
@@ -26,6 +24,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/compress v1.9.5 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect

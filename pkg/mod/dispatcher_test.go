@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/entity"
-	"github.com/shiningrush/fastflow/pkg/log"
-	"github.com/shiningrush/fastflow/pkg/utils/data"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/weeyp/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/log"
+	"github.com/weeyp/fastflow/pkg/utils/data"
 )
 
 func TestDefDispatcher_Do(t *testing.T) {

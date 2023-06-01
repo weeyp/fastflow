@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/shiningrush/fastflow/pkg/entity"
 	"github.com/stretchr/testify/assert"
+	"github.com/weeyp/fastflow/pkg/entity"
 )
 
 func TestTaskNode_ComputeStatus(t *testing.T) {

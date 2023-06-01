@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/shiningrush/fastflow/pkg/log"
-	"github.com/shiningrush/fastflow/pkg/utils"
-	"github.com/shiningrush/fastflow/pkg/utils/value"
+	"github.com/weeyp/fastflow/pkg/log"
+	"github.com/weeyp/fastflow/pkg/utils"
+	"github.com/weeyp/fastflow/pkg/utils/value"
 )
 
 // NewDag new a dag
@@ -27,12 +27,6 @@ type Dag struct {
 	Vars     DagVars   `yaml:"vars,omitempty" json:"vars,omitempty" bson:"vars,omitempty"`
 	Status   DagStatus `yaml:"status,omitempty" json:"status,omitempty" bson:"status,omitempty"`
 	Tasks    []Task    `yaml:"tasks,omitempty" json:"tasks,omitempty" bson:"tasks,omitempty"`
-}
-
-// SpecifiedVar
-type SpecifiedVar struct {
-	Name  string
-	Value string
 }
 
 // Run used to build a new DagInstance, then you also need save it to Store

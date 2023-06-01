@@ -4,11 +4,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/entity"
-	"github.com/shiningrush/fastflow/pkg/event"
-	"github.com/shiningrush/fastflow/pkg/log"
-	"github.com/shiningrush/fastflow/pkg/utils/data"
 	"github.com/shiningrush/goevent"
+	"github.com/weeyp/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/event"
+	"github.com/weeyp/fastflow/pkg/log"
+	"github.com/weeyp/fastflow/pkg/utils/data"
 )
 
 // DefDispatcher

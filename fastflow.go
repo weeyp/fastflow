@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/shiningrush/fastflow/pkg/actions"
-	"github.com/shiningrush/fastflow/pkg/entity"
-	"github.com/shiningrush/fastflow/pkg/entity/run"
-	"github.com/shiningrush/fastflow/pkg/event"
-	"github.com/shiningrush/fastflow/pkg/mod"
-	"github.com/shiningrush/fastflow/pkg/utils"
-	"github.com/shiningrush/fastflow/pkg/utils/data"
 	"github.com/shiningrush/goevent"
+	"github.com/weeyp/fastflow/pkg/actions"
+	"github.com/weeyp/fastflow/pkg/entity"
+	"github.com/weeyp/fastflow/pkg/entity/run"
+	"github.com/weeyp/fastflow/pkg/event"
+	"github.com/weeyp/fastflow/pkg/mod"
+	"github.com/weeyp/fastflow/pkg/utils"
+	"github.com/weeyp/fastflow/pkg/utils/data"
 	"gopkg.in/yaml.v3"
 )
 
