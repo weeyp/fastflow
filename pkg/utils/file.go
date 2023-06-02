@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
-// DagReader
+// DagReader interface for reading dag files
 type DagReader interface {
 	ReadPathsFromDir(dir string) ([]string, error)
 	ReadDag(path string) ([]byte, error)
@@ -16,11 +15,11 @@ var (
 	DefaultReader DagReader = &FileDagReader{}
 )
 
-// FileDagReader
+// FileDagReader reads dag files from a directory
 type FileDagReader struct {
 }
 
-// ReadPathsFromDir
+// ReadPathsFromDir reads all dag files from a directory
 func (r FileDagReader) ReadPathsFromDir(dir string) (dagFiles []string, err error) {
 	if err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -41,7 +40,7 @@ func (r FileDagReader) ReadPathsFromDir(dir string) (dagFiles []string, err erro
 	return
 }
 
-// ReadDag
+// ReadDag reads a dag file
 func (r FileDagReader) ReadDag(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+	return os.ReadFile(path)
 }

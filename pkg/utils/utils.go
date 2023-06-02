@@ -1,6 +1,6 @@
 package utils
 
-// StringsContain
+// StringsContain 判断字符串数组中是否包含某个字符串
 func StringsContain(strs []string, str string) bool {
 	for i := range strs {
 		if strs[i] == str {

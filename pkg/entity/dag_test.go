@@ -15,10 +15,10 @@ func TestDagInstance_VarsIterator(t *testing.T) {
 		},
 	}
 
-	ret := []struct {
+	var ret []struct {
 		key   string
 		value string
-	}{}
+	}
 	wantRet := []struct {
 		key   string
 		value string

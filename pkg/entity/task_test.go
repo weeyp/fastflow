@@ -2,12 +2,10 @@ package entity
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/weeyp/fastflow/pkg/entity/run"
 )
 
@@ -21,29 +19,29 @@ func TestTaskInstance_SetStatus(t *testing.T) {
 	}{
 		{
 			giveTaskIns: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Name:     "test",
-				Reason:   "reason",
-				Traces:   []TraceInfo{{Message: "traces"}},
+				ID:     "test-id",
+				Name:   "test",
+				Reason: "reason",
+				Traces: []TraceInfo{{Message: "traces"}},
 			},
 			giveStatus: TaskInstanceStatusFailed,
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Reason:   "reason",
-				Status:   TaskInstanceStatusFailed,
+				ID:     "test-id",
+				Reason: "reason",
+				Status: TaskInstanceStatusFailed,
 			},
 		},
 		{
 			giveTaskIns: &TaskInstance{
-				BaseInfo:  BaseInfo{ID: "test-id"},
+				ID:        "test-id",
 				Name:      "test",
 				Reason:    "reason",
 				Traces:    []TraceInfo{{Message: "traces"}},
 				bufTraces: []TraceInfo{{Message: "buf-traces"}},
 			},
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Reason:   "reason",
+				ID:     "test-id",
+				Reason: "reason",
 				Traces: []TraceInfo{
 					{Message: "traces"},
 					{Message: "buf-traces"},
@@ -52,15 +50,15 @@ func TestTaskInstance_SetStatus(t *testing.T) {
 		},
 		{
 			giveTaskIns: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Name:     "test",
-				Reason:   "reason",
-				Traces:   []TraceInfo{{Message: "traces"}},
+				ID:     "test-id",
+				Name:   "test",
+				Reason: "reason",
+				Traces: []TraceInfo{{Message: "traces"}},
 			},
 			givePatchErr: fmt.Errorf("patch failed"),
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Reason:   "reason",
+				ID:     "test-id",
+				Reason: "reason",
 			},
 			wantErr: fmt.Errorf("patch failed"),
 		},
@@ -91,14 +89,14 @@ func TestTaskInstance_Trace(t *testing.T) {
 		{
 			giveOpt: func(opt *run.TraceOption) {},
 			giveTaskIns: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Name:     "test",
-				Reason:   "reason",
-				Traces:   []TraceInfo{{Message: "traces"}},
+				ID:     "test-id",
+				Name:   "test",
+				Reason: "reason",
+				Traces: []TraceInfo{{Message: "traces"}},
 			},
 			giveMsg: "msg",
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
+				ID: "test-id",
 				Traces: []TraceInfo{
 					{Message: "traces"},
 					{Time: time.Now().Unix(), Message: "msg"},
@@ -109,14 +107,14 @@ func TestTaskInstance_Trace(t *testing.T) {
 		{
 			giveOpt: run.TraceOpPersistAfterAction,
 			giveTaskIns: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Name:     "test",
-				Reason:   "reason",
-				Traces:   []TraceInfo{{Message: "traces"}},
+				ID:     "test-id",
+				Name:   "test",
+				Reason: "reason",
+				Traces: []TraceInfo{{Message: "traces"}},
 			},
 			giveMsg: "msg",
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
+				ID: "test-id",
 				Traces: []TraceInfo{
 					{Message: "traces"},
 				},
@@ -128,14 +126,14 @@ func TestTaskInstance_Trace(t *testing.T) {
 		{
 			giveOpt: func(opt *run.TraceOption) {},
 			giveTaskIns: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
-				Name:     "test",
-				Reason:   "reason",
-				Traces:   []TraceInfo{{Message: "traces"}},
+				ID:     "test-id",
+				Name:   "test",
+				Reason: "reason",
+				Traces: []TraceInfo{{Message: "traces"}},
 			},
 			giveMsg: "msg",
 			wantPatch: &TaskInstance{
-				BaseInfo: BaseInfo{ID: "test-id"},
+				ID: "test-id",
 				Traces: []TraceInfo{
 					{Message: "traces"},
 					{Time: time.Now().Unix(), Message: "msg"},
@@ -155,147 +153,6 @@ func TestTaskInstance_Trace(t *testing.T) {
 		}
 		tc.giveTaskIns.Trace(tc.giveMsg, tc.giveOpt)
 		assert.Equal(t, tc.wantPatchCalled, patchCalled)
-	}
-}
-
-func TestTaskInstance_Run(t *testing.T) {
-	tests := []struct {
-		caseDesc            string
-		giveTask            *TaskInstance
-		givePanic           bool
-		giveParams          interface{}
-		wantErr             error
-		wantSaveTasks       []TaskInstance
-		wantRunBeforeCalled bool
-		wantRunCalled       bool
-		wantRunAfterCalled  bool
-		wantRetryCalled     bool
-	}{
-		{
-			caseDesc: "normal",
-			giveTask: &TaskInstance{
-				BaseInfo: BaseInfo{
-					ID: "test-task",
-				},
-				Status: TaskInstanceStatusInit,
-			},
-			giveParams: "",
-			wantSaveTasks: []TaskInstance{
-				{
-					BaseInfo: BaseInfo{
-						ID: "test-task",
-					},
-					Status: TaskInstanceStatusRunning,
-				},
-				{
-					BaseInfo: BaseInfo{
-						ID: "test-task",
-					},
-					Status: TaskInstanceStatusEnding,
-				},
-				{
-					BaseInfo: BaseInfo{
-						ID: "test-task",
-					},
-					Status: TaskInstanceStatusSuccess,
-				},
-			},
-			wantRunCalled:       true,
-			wantRunAfterCalled:  true,
-			wantRunBeforeCalled: true,
-		},
-		{
-			caseDesc: "panic",
-			giveTask: &TaskInstance{
-				BaseInfo: BaseInfo{
-					ID: "test-task",
-				},
-				Status: TaskInstanceStatusInit,
-			},
-			giveParams: "",
-			givePanic:  true,
-			wantErr:    fmt.Errorf("get panic when running action: testAction, err: action build a panic, stack:"),
-			wantSaveTasks: []TaskInstance{
-				{
-					BaseInfo: BaseInfo{
-						ID: "test-task",
-					},
-					Status: TaskInstanceStatusRunning,
-				},
-			},
-			wantRunCalled:       true,
-			wantRunBeforeCalled: true,
-		},
-		{
-			caseDesc: "retry",
-			giveTask: &TaskInstance{
-				BaseInfo: BaseInfo{
-					ID: "test-task",
-				},
-				Status: TaskInstanceStatusRetrying,
-			},
-			giveParams: "",
-			wantSaveTasks: []TaskInstance{
-				{
-					BaseInfo: BaseInfo{
-						ID: "test-task",
-					},
-					Status: TaskInstanceStatusInit,
-				},
-			},
-			wantRetryCalled: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.caseDesc, func(t *testing.T) {
-			var saveTasks []TaskInstance
-			calledBefore, calledRun, calledAfter, calledRetry := false, false, false, false
-			testAct := &run.MockAction{}
-			testAct.On("Name").Return("testAction")
-			testAct.On("Run", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-				calledRun = true
-				assert.Equal(t, tc.giveTask.Context, args.Get(0))
-				assert.Equal(t, tc.giveParams, args.Get(1))
-				if tc.givePanic {
-					panic("action build a panic")
-				}
-			}).Return(nil)
-			testAct.On("RunBefore", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-				calledBefore = true
-				assert.Equal(t, tc.giveTask.Context, args.Get(0))
-				assert.Equal(t, tc.giveParams, args.Get(1))
-			}).Return(nil)
-			testAct.On("RunAfter", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-				calledAfter = true
-				assert.Equal(t, tc.giveTask.Context, args.Get(0))
-				assert.Equal(t, tc.giveParams, args.Get(1))
-			}).Return(nil)
-			testAct.On("ParameterNew", mock.Anything, mock.Anything).Return(nil)
-			testAct.On("RetryBefore", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-				calledRetry = true
-				assert.Equal(t, tc.giveTask.Context, args.Get(0))
-				assert.Equal(t, tc.giveParams, args.Get(1))
-			}).Return(nil)
-			tc.giveTask.Patch = func(instance *TaskInstance) error {
-				st := *instance
-				st.Patch = nil
-				saveTasks = append(saveTasks, st)
-				return nil
-			}
-
-			err := tc.giveTask.Run(tc.giveParams, testAct)
-			if tc.givePanic {
-				assert.True(t, strings.HasPrefix(err.Error(), tc.wantErr.Error()))
-			} else {
-				assert.Equal(t, tc.wantErr, err)
-			}
-			assert.ElementsMatch(t, tc.wantSaveTasks, saveTasks)
-			assert.Equal(t, tc.wantRunCalled, calledRun)
-			assert.Equal(t, tc.wantRunBeforeCalled, calledBefore)
-			assert.Equal(t, tc.wantRunAfterCalled, calledAfter)
-			assert.Equal(t, tc.wantRetryCalled, calledRetry)
-		})
 	}
 }
 

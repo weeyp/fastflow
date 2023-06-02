@@ -18,15 +18,15 @@ func NewDag() *Dag {
 	}
 }
 
-// Dag
+// Dag used to define a dag
 type Dag struct {
-	BaseInfo `yaml:",inline" json:",inline" bson:"inline"`
-	Name     string    `yaml:"name,omitempty" json:"name,omitempty" bson:"name,omitempty"`
-	Desc     string    `yaml:"desc,omitempty" json:"desc,omitempty" bson:"desc,omitempty"`
-	Cron     string    `yaml:"cron,omitempty" json:"cron,omitempty" bson:"cron,omitempty"`
-	Vars     DagVars   `yaml:"vars,omitempty" json:"vars,omitempty" bson:"vars,omitempty"`
-	Status   DagStatus `yaml:"status,omitempty" json:"status,omitempty" bson:"status,omitempty"`
-	Tasks    []Task    `yaml:"tasks,omitempty" json:"tasks,omitempty" bson:"tasks,omitempty"`
+	ID     string    `yaml:"id,omitempty" json:"id,omitempty" bson:"_id,omitempty"`
+	Name   string    `yaml:"name,omitempty" json:"name,omitempty" bson:"name,omitempty"`
+	Desc   string    `yaml:"desc,omitempty" json:"desc,omitempty" bson:"desc,omitempty"`
+	Cron   string    `yaml:"cron,omitempty" json:"cron,omitempty" bson:"cron,omitempty"`
+	Vars   DagVars   `yaml:"vars,omitempty" json:"vars,omitempty" bson:"vars,omitempty"`
+	Status DagStatus `yaml:"status,omitempty" json:"status,omitempty" bson:"status,omitempty"`
+	Tasks  []Task    `yaml:"tasks,omitempty" json:"tasks,omitempty" bson:"tasks,omitempty"`
 }
 
 // Run used to build a new DagInstance, then you also need save it to Store
@@ -57,18 +57,18 @@ func (d *Dag) Run(trigger Trigger, specVars map[string]string) (*DagInstance, er
 
 type DagVars map[string]DagVar
 
-// DagVar
+// DagVar used to define a dag var
 type DagVar struct {
 	Desc         string `yaml:"desc,omitempty" json:"desc,omitempty" bson:"desc,omitempty"`
 	DefaultValue string `yaml:"defaultValue,omitempty" json:"defaultValue,omitempty" bson:"defaultValue,omitempty"`
 }
 
-// DagInstanceVar
+// DagInstanceVar used to define a dag instance var
 type DagInstanceVar struct {
 	Value string `json:"value,omitempty" bson:"value,omitempty"`
 }
 
-// DagStatus
+// DagStatus used to define a dag status
 type DagStatus string
 
 const (
@@ -76,9 +76,9 @@ const (
 	DagStatusStopped DagStatus = "stopped"
 )
 
-// DagInstance
+// DagInstance used to define a dag instance
 type DagInstance struct {
-	BaseInfo  `bson:"inline"`
+	ID        string            `yaml:"id,omitempty" json:"id,omitempty" bson:"_id,omitempty"`
 	DagID     string            `json:"dagId,omitempty" bson:"dagId,omitempty"`
 	Trigger   Trigger           `json:"trigger,omitempty" bson:"trigger,omitempty"`
 	Worker    string            `json:"worker,omitempty" bson:"worker,omitempty"`
@@ -89,11 +89,6 @@ type DagInstance struct {
 	Cmd       *Command          `json:"cmd,omitempty" bson:"cmd,omitempty"`
 }
 
-var (
-	StoreMarshal   func(interface{}) ([]byte, error)
-	StoreUnmarshal func([]byte, interface{}) error
-)
-
 // ShareData can read/write within all tasks and will persist it
 // if you want a high performance just within same task, you can use
 // ExecuteContext's Context
@@ -102,19 +97,6 @@ type ShareData struct {
 	Save func(data *ShareData) error
 
 	mutex sync.Mutex
-}
-
-// MarshalBSON used by mongo
-func (d *ShareData) MarshalBSON() ([]byte, error) {
-	return StoreMarshal(d.Dict)
-}
-
-// UnmarshalBSON used by mongo
-func (d *ShareData) UnmarshalBSON(data []byte) error {
-	if d.Dict == nil {
-		d.Dict = make(map[string]string)
-	}
-	return StoreUnmarshal(data, &d.Dict)
 }
 
 // MarshalJSON used by json
@@ -158,7 +140,7 @@ func (d *ShareData) Set(key string, val string) {
 	}
 }
 
-// DagInstanceVars
+// DagInstanceVars used to define a dag instance vars
 type DagInstanceVars map[string]DagInstanceVar
 
 // Cancel a task, it is just set a command, command will execute by Parser
@@ -182,7 +164,7 @@ var (
 
 type DagInstanceHookFunc func(dagIns *DagInstance)
 
-// DagInstanceLifecycleHook
+// DagInstanceLifecycleHook used to define a dag instance lifecycle hook
 type DagInstanceLifecycleHook struct {
 	BeforeRun     DagInstanceHookFunc
 	BeforeSuccess DagInstanceHookFunc
@@ -191,7 +173,7 @@ type DagInstanceLifecycleHook struct {
 	BeforeRetry   DagInstanceHookFunc
 }
 
-// VarsGetter
+// VarsGetter used to get a var value by key
 func (dagIns *DagInstance) VarsGetter() utils.KeyValueGetter {
 	return func(key string) (string, bool) {
 		val, ok := dagIns.Vars[key]
@@ -199,7 +181,7 @@ func (dagIns *DagInstance) VarsGetter() utils.KeyValueGetter {
 	}
 }
 
-// VarsIterator
+// VarsIterator used to iterate all vars
 func (dagIns *DagInstance) VarsIterator() utils.KeyValueIterator {
 	return func(iterateFunc utils.KeyValueIterateFunc) {
 		for k, v := range dagIns.Vars {
@@ -210,7 +192,7 @@ func (dagIns *DagInstance) VarsIterator() utils.KeyValueIterator {
 	}
 }
 
-// Success the dag instance
+// Run executeHook execute a hook
 func (dagIns *DagInstance) Run() {
 	dagIns.executeHook(HookDagInstance.BeforeRun)
 	dagIns.Status = DagInstanceStatusRunning
@@ -257,7 +239,7 @@ func (dagIns *DagInstance) executeHook(hookFunc DagInstanceHookFunc) {
 	}
 }
 
-// CanChange indicate if the dag instance can modify status
+// CanModifyStatus CanChange indicate if the dag instance can modify status
 func (dagIns *DagInstance) CanModifyStatus() bool {
 	return dagIns.Status != DagInstanceStatusFailed
 }
@@ -274,13 +256,13 @@ func (vars DagInstanceVars) Render(p map[string]interface{}) (map[string]interfa
 	return p, err
 }
 
-// Command
+// Command used to define a command
 type Command struct {
 	Name             CommandName
 	TargetTaskInsIDs []string
 }
 
-// CommandName
+// CommandName used to define a command name
 type CommandName string
 
 const (
@@ -288,19 +270,18 @@ const (
 	CommandNameCancel = "cancel"
 )
 
-// DagInstanceStatus
+// DagInstanceStatus used to define a dag instance status
 type DagInstanceStatus string
 
 const (
-	DagInstanceStatusInit      DagInstanceStatus = "init"
-	DagInstanceStatusScheduled DagInstanceStatus = "scheduled"
-	DagInstanceStatusRunning   DagInstanceStatus = "running"
-	DagInstanceStatusBlocked   DagInstanceStatus = "blocked"
-	DagInstanceStatusFailed    DagInstanceStatus = "failed"
-	DagInstanceStatusSuccess   DagInstanceStatus = "success"
+	DagInstanceStatusInit    DagInstanceStatus = "init"
+	DagInstanceStatusRunning DagInstanceStatus = "running"
+	DagInstanceStatusBlocked DagInstanceStatus = "blocked"
+	DagInstanceStatusFailed  DagInstanceStatus = "failed"
+	DagInstanceStatusSuccess DagInstanceStatus = "success"
 )
 
-// Trigger
+// Trigger used to define a trigger
 type Trigger string
 
 const (

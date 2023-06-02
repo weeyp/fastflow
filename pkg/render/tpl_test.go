@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -52,7 +53,8 @@ func TestCachedTplGetter_GetTpl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := tt.fields.tplProvider
 			for i, text := range tt.args.tplTexts {
-				_, err := c.GetTpl(text)
+				tttt, err := c.GetTpl(text)
+				fmt.Println(tttt, err)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("GetTpl() index:%d error = %v, wantErr %v", i, err, tt.wantErr)
 					return

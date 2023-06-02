@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/weeyp/fastflow"
-	mongoKeeper "github.com/weeyp/fastflow/keeper/mongo"
 	"github.com/weeyp/fastflow/pkg/entity/run"
 	"github.com/weeyp/fastflow/pkg/mod"
-	mongoStore "github.com/weeyp/fastflow/store/mongo"
 )
 
 type PrintAction struct {
@@ -30,18 +28,6 @@ func main() {
 		&PrintAction{},
 	})
 
-	// init keeper, it used to e
-	keeper := mongoKeeper.NewKeeper(&mongoKeeper.KeeperOption{
-		Key: "worker-1",
-		// if your mongo does not set user/pwd, you should remove it
-		ConnStr:  "mongodb://root:pwd@127.0.0.1:27017/fastflow?authSource=admin",
-		Database: "mongo-demo",
-		Prefix:   "test",
-	})
-	if err := keeper.Init(); err != nil {
-		log.Fatal(fmt.Errorf("init keeper failed: %w", err))
-	}
-
 	// init store
 	st := mongoStore.NewStore(&mongoStore.StoreOption{
 		// if your mongo does not set user/pwd, you should remove it
@@ -57,8 +43,7 @@ func main() {
 
 	// start fastflow
 	if err := fastflow.Start(&fastflow.InitialOption{
-		Keeper: keeper,
-		Store:  st,
+		Store: st,
 		// use yaml to define dag
 		ReadDagFromDir: "./",
 	}); err != nil {

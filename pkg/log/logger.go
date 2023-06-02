@@ -13,63 +13,63 @@ func SetLogger(log Logger) {
 	defLog = log
 }
 
-// default logger
+// StdoutLogger for testing
 type StdoutLogger struct {
 }
 
-// Debug
+// Debug debug log to stdout
 func (s *StdoutLogger) Debug(msg string, fields ...interface{}) {
 	log.Println("debug:", msg, fields)
 }
 
-// Debugf
+// Debugf debug log to stdout format
 func (s *StdoutLogger) Debugf(msg string, args ...interface{}) {
 	log.Println("debug:", fmt.Sprintf(msg, args...))
 }
 
-// Info
+// Info log to stdout
 func (s *StdoutLogger) Info(msg string, fields ...interface{}) {
 	log.Println("info:", msg, fields)
 }
 
-// Infof
+// Infof log to stdout format
 func (s *StdoutLogger) Infof(msg string, args ...interface{}) {
 	log.Println("info:", fmt.Sprintf(msg, args...))
 }
 
-// Warn
+// Warn log to stdout
 func (s *StdoutLogger) Warn(msg string, fields ...interface{}) {
 	log.Println("warn:", msg, fields)
 }
 
-// Warnf
+// Warnf log to stdout format
 func (s *StdoutLogger) Warnf(msg string, args ...interface{}) {
 	log.Println("warn:", fmt.Sprintf(msg, args...))
 }
 
-// Error
+// Error log to stdout
 func (s *StdoutLogger) Error(msg string, fields ...interface{}) {
 	log.Println("error:", msg, fields)
 }
 
-// Errorf
+// Errorf log to stdout format
 func (s *StdoutLogger) Errorf(msg string, args ...interface{}) {
 	log.Println("error:", fmt.Sprintf(msg, args...))
 }
 
-// Fatal
+// Fatal log to stdout
 func (s *StdoutLogger) Fatal(msg string, fields ...interface{}) {
 	log.Println("fatal:", msg, fields)
 	os.Exit(1)
 }
 
-// Fatalf
+// Fatalf log to stdout format
 func (s *StdoutLogger) Fatalf(msg string, args ...interface{}) {
 	log.Println("fatal:", fmt.Sprintf(msg, args...))
 	os.Exit(1)
 }
 
-// Logger
+// Logger interface
 type Logger interface {
 	Debug(msg string, fields ...interface{})
 	Debugf(msg string, args ...interface{})
@@ -83,52 +83,52 @@ type Logger interface {
 	Fatalf(msg string, args ...interface{})
 }
 
-// Debug
+// Debug log to stdout
 func Debug(msg string, fields ...interface{}) {
 	defLog.Debug(msg, fields...)
 }
 
-// Debugf
+// Debugf log to stdout format
 func Debugf(msg string, args ...interface{}) {
 	defLog.Debugf(msg, args...)
 }
 
-// Info
+// Info log to stdout
 func Info(msg string, fields ...interface{}) {
 	defLog.Info(msg, fields...)
 }
 
-// Infof
+// Infof log to stdout format
 func Infof(msg string, args ...interface{}) {
 	defLog.Infof(msg, args...)
 }
 
-// Warn
+// Warn log to stdout
 func Warn(msg string, fields ...interface{}) {
 	defLog.Warn(msg, fields...)
 }
 
-// Warnf
+// Warnf log to stdout format
 func Warnf(msg string, args ...interface{}) {
 	defLog.Warnf(msg, args...)
 }
 
-// Error
+// Error log to stdout
 func Error(msg string, fields ...interface{}) {
 	defLog.Error(msg, fields...)
 }
 
-// Errorf
+// Errorf log to stdout format
 func Errorf(msg string, args ...interface{}) {
 	defLog.Errorf(msg, args...)
 }
 
-// Fatal
+// Fatal log to stdout
 func Fatal(msg string, fields ...interface{}) {
 	defLog.Fatal(msg, fields...)
 }
 
-// Fatalf
+// Fatalf log to stdout format
 func Fatalf(msg string, args ...interface{}) {
 	defLog.Fatalf(msg, args...)
 }

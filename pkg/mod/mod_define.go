@@ -12,7 +12,6 @@ var (
 
 	defExc       Executor
 	defStore     Store
-	defKeeper    Keeper
 	defParser    Parser
 	defCommander Commander
 )
@@ -156,27 +155,6 @@ func SetStore(e Store) {
 // GetStore
 func GetStore() Store {
 	return defStore
-}
-
-// Keeper
-type Keeper interface {
-	Closer
-	IsLeader() bool
-	IsAlive(workerKey string) (bool, error)
-	AliveNodes() ([]string, error)
-	WorkerKey() string
-	WorkerNumber() int
-	NewMutex(key string) DistributedMutex
-}
-
-// SetKeeper
-func SetKeeper(e Keeper) {
-	defKeeper = e
-}
-
-// GetKeeper
-func GetKeeper() Keeper {
-	return defKeeper
 }
 
 // Parser used to execute command, init dag instance and push task instance

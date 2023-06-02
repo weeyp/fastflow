@@ -14,17 +14,17 @@ var (
 	ErrMutexAlreadyUnlock = errors.New("mutex is already unlocked")
 )
 
-// Errors
+// Errors is a slice of errors
 type Errors struct {
 	errs []error
 }
 
-// Len
+// Len returns the length of the errors slice
 func (e *Errors) Len() int {
 	return len(e.errs)
 }
 
-// Append
+// Append appends an error to the errors slice
 func (e *Errors) Append(err error) {
 	e.errs = append(e.errs, err)
 }

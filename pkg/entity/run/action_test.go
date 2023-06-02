@@ -22,6 +22,7 @@ func TestLoopDo(t *testing.T) {
 		{
 			giveDo: func() error {
 				cnt++
+				fmt.Println("cnt:", cnt)
 				if cnt == 3 {
 					return EndLoop
 				}

@@ -10,7 +10,7 @@ import (
 	"github.com/weeyp/fastflow/pkg/utils"
 )
 
-// Task
+// Task instance
 type Task struct {
 	ID          string                 `yaml:"id,omitempty" json:"id,omitempty"  bson:"id,omitempty"`
 	Name        string                 `yaml:"name,omitempty" json:"name,omitempty"  bson:"name,omitempty"`
@@ -21,29 +21,29 @@ type Task struct {
 	PreChecks   PreChecks              `yaml:"preCheck,omitempty" json:"preCheck,omitempty"  bson:"preCheck,omitempty"`
 }
 
-// GetGraphID
+// GetGraphID return graph id
 func (t *Task) GetGraphID() string {
 	return t.ID
 }
 
-// GetID
+// GetID return task id
 func (t *Task) GetID() string {
 	return t.ID
 }
 
-// GetDepend
+// GetDepend return depend on
 func (t *Task) GetDepend() []string {
 	return t.DependOn
 }
 
-// GetStatus
+// GetStatus return task status
 func (t *Task) GetStatus() TaskInstanceStatus {
 	return ""
 }
 
 type PreChecks map[string]*Check
 
-// Check
+// Check return if all check is meet
 type Check struct {
 	Conditions []TaskCondition `yaml:"conditions,omitempty" json:"conditions,omitempty"  bson:"conditions,omitempty"`
 	Act        ActiveAction    `yaml:"act,omitempty" json:"act,omitempty"  bson:"act,omitempty"`
@@ -62,9 +62,9 @@ func (c *Check) IsMeet(dagIns *DagInstance) bool {
 type ActiveAction string
 
 const (
-	// skip action when all condition is meet, otherwise execute it
+	// ActiveActionSkip skip action when all condition is meet, otherwise execute it
 	ActiveActionSkip ActiveAction = "skip"
-	// block action when all condition is meet, otherwise execute it
+	// ActiveActionBlock block action when all condition is meet, otherwise execute it
 	ActiveActionBlock ActiveAction = "block"
 )
 
@@ -82,7 +82,7 @@ const (
 	TaskConditionSourceShareData TaskConditionSource = "share-data"
 )
 
-// BuildKvGetter
+// BuildKvGetter return kv getter
 func (t TaskConditionSource) BuildKvGetter(dagIns *DagInstance) utils.KeyValueGetter {
 	switch t {
 	case TaskConditionSourceVars:
@@ -94,7 +94,7 @@ func (t TaskConditionSource) BuildKvGetter(dagIns *DagInstance) utils.KeyValueGe
 	}
 }
 
-// TaskCondition
+// TaskCondition task condition
 type TaskCondition struct {
 	Source TaskConditionSource `yaml:"source,omitempty" json:"source,omitempty"  bson:"source,omitempty"`
 	Key    string              `yaml:"key,omitempty" json:"key,omitempty"  bson:"key,omitempty"`
@@ -130,9 +130,9 @@ func isStrInArray(str string, arr []string) bool {
 	return false
 }
 
-// TaskInstance
+// TaskInstance task instance
 type TaskInstance struct {
-	BaseInfo `bson:"inline"`
+	ID string `json:"id,omitempty" bson:"id,omitempty"`
 	// Task's Id it should be unique in a dag instance
 	TaskID      string                 `json:"taskId,omitempty" bson:"taskId,omitempty"`
 	DagInsID    string                 `json:"dagInsId,omitempty" bson:"dagInsId,omitempty"`
@@ -155,13 +155,13 @@ type TaskInstance struct {
 	bufTraces []TraceInfo
 }
 
-// TraceInfo
+// TraceInfo trace info
 type TraceInfo struct {
 	Time    int64  `json:"time,omitempty" bson:"time,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
-// NewTaskInstance
+// NewTaskInstance new task instance
 func NewTaskInstance(dagInsId string, t Task) *TaskInstance {
 	return &TaskInstance{
 		TaskID:      t.ID,
@@ -176,27 +176,27 @@ func NewTaskInstance(dagInsId string, t Task) *TaskInstance {
 	}
 }
 
-// GetGraphID
+// GetGraphID return graph id
 func (t *TaskInstance) GetGraphID() string {
 	return t.TaskID
 }
 
-// GetID
+// GetID return id
 func (t *TaskInstance) GetID() string {
 	return t.ID
 }
 
-// GetDepend
+// GetDepend return depend
 func (t *TaskInstance) GetDepend() []string {
 	return t.DependOn
 }
 
-// GetStatus
+// GetStatus return status
 func (t *TaskInstance) GetStatus() TaskInstanceStatus {
 	return t.Status
 }
 
-// InitialDep
+// InitialDep initial task instance
 func (t *TaskInstance) InitialDep(ctx run.ExecuteContext, patch func(*TaskInstance) error, dagIns *DagInstance) {
 	t.Patch = patch
 	t.Context = ctx
@@ -206,7 +206,7 @@ func (t *TaskInstance) InitialDep(ctx run.ExecuteContext, patch func(*TaskInstan
 // SetStatus will persist task instance
 func (t *TaskInstance) SetStatus(s TaskInstanceStatus) error {
 	t.Status = s
-	patch := &TaskInstance{BaseInfo: BaseInfo{ID: t.ID}, Status: t.Status, Reason: t.Reason}
+	patch := &TaskInstance{ID: t.ID, Status: t.Status, Reason: t.Reason}
 	if len(t.bufTraces) != 0 {
 		patch.Traces = append(t.Traces, t.bufTraces...)
 	}
@@ -229,7 +229,7 @@ func (t *TaskInstance) Trace(msg string, ops ...run.TraceOp) {
 		Message: msg,
 	})
 
-	if err := t.Patch(&TaskInstance{BaseInfo: BaseInfo{ID: t.ID}, Traces: t.Traces}); err != nil {
+	if err := t.Patch(&TaskInstance{ID: t.ID, Traces: t.Traces}); err != nil {
 		log.Error("save trace failed",
 			"err", err,
 			"trace", t.Traces)
@@ -299,7 +299,7 @@ func (t *TaskInstance) Run(params interface{}, act run.Action) (err error) {
 	return nil
 }
 
-// DoPreCheck
+// DoPreCheck do pre-check
 func (t *TaskInstance) DoPreCheck(dagIns *DagInstance) (isActive bool, err error) {
 	if t.PreChecks == nil {
 		return
@@ -323,7 +323,7 @@ func (t *TaskInstance) DoPreCheck(dagIns *DagInstance) (isActive bool, err error
 	return
 }
 
-// TaskInstanceStatus
+// TaskInstanceStatus task instance status
 type TaskInstanceStatus string
 
 const (

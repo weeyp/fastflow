@@ -1,7 +1,6 @@
 package fastflow
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -17,7 +16,6 @@ import (
 	"github.com/weeyp/fastflow/pkg/actions"
 	"github.com/weeyp/fastflow/pkg/entity"
 	"github.com/weeyp/fastflow/pkg/entity/run"
-	"github.com/weeyp/fastflow/pkg/event"
 	"github.com/weeyp/fastflow/pkg/mod"
 	"github.com/weeyp/fastflow/pkg/utils"
 	"github.com/weeyp/fastflow/pkg/utils/data"
@@ -33,16 +31,15 @@ func RegisterAction(acts []run.Action) {
 	}
 }
 
-// GetAction
+// GetAction get action by name
 func GetAction(name string) (run.Action, bool) {
 	act, ok := mod.ActionMap[name]
 	return act, ok
 }
 
-// InitialOption
+// InitialOption used to initial fastflow
 type InitialOption struct {
-	Keeper mod.Keeper
-	Store  mod.Store
+	Store mod.Store
 
 	// ParserWorkersCnt default 100
 	ParserWorkersCnt int
@@ -86,7 +83,6 @@ func Init(opt *InitialOption) error {
 	}
 
 	initCommonComponent(opt)
-	initLeaderChangedHandler(opt)
 
 	RegisterAction([]run.Action{
 		&actions.Waiting{},
@@ -96,25 +92,6 @@ func Init(opt *InitialOption) error {
 		return readDagFromDir(opt.ReadDagFromDir)
 	}
 	return nil
-}
-
-func initLeaderChangedHandler(opt *InitialOption) {
-	h := &LeaderChangedHandler{
-		opt: opt,
-	}
-	if err := goevent.Subscribe(h); err != nil {
-		log.Fatalln(err)
-	}
-	closers = append(closers, h)
-
-	// when application init, leader election should completed, so we need trigger it
-	if opt.Keeper.IsLeader() {
-		h.Handle(context.Background(), &event.LeaderChanged{
-			IsLeader:  true,
-			WorkerKey: opt.Keeper.WorkerKey(),
-		})
-	}
-	return
 }
 
 // SetDagInstanceLifecycleHook set hook handler for fastflow
@@ -132,39 +109,6 @@ type LeaderChangedHandler struct {
 	mutex        sync.Mutex
 }
 
-// Topic
-func (l *LeaderChangedHandler) Topic() []string {
-	return []string{event.KeyLeaderChanged}
-}
-
-// Handle
-func (l *LeaderChangedHandler) Handle(cxt context.Context, e goevent.Event) {
-	lcEvent := e.(*event.LeaderChanged)
-	// changed to leader
-	if lcEvent.IsLeader && len(l.leaderCloser) == 0 {
-		wg := mod.NewDefWatchDog(l.opt.DagScheduleTimeout)
-		wg.Init()
-		l.leaderCloser = append(l.leaderCloser, wg)
-
-		dis := mod.NewDefDispatcher()
-		dis.Init()
-		l.leaderCloser = append(l.leaderCloser, dis)
-		log.Println("leader initial")
-	}
-	// continue leader failed
-	if !lcEvent.IsLeader && len(l.leaderCloser) == 0 {
-		l.Close()
-	}
-}
-
-// Close leader component
-func (l *LeaderChangedHandler) Close() {
-	for i := range l.leaderCloser {
-		l.leaderCloser[i].Close()
-	}
-	l.leaderCloser = []mod.Closer{}
-}
-
 // Close all closer
 func Close() {
 	for i := range closers {
@@ -174,9 +118,6 @@ func Close() {
 }
 
 func checkOption(opt *InitialOption) error {
-	if opt.Keeper == nil {
-		return fmt.Errorf("keeper cannot be nil")
-	}
 	if opt.Store == nil {
 		return fmt.Errorf("store cannot be nil")
 	}
@@ -197,10 +138,7 @@ func checkOption(opt *InitialOption) error {
 }
 
 func initCommonComponent(opt *InitialOption) {
-	mod.SetKeeper(opt.Keeper)
 	mod.SetStore(opt.Store)
-	entity.StoreMarshal = opt.Store.Marshal
-	entity.StoreUnmarshal = opt.Store.Unmarshal
 
 	// Executor must init before parse otherwise will cause a error
 	exe := mod.NewDefExecutor(opt.ExecutorTimeout, opt.ExecutorWorkerCnt)
@@ -218,7 +156,6 @@ func initCommonComponent(opt *InitialOption) {
 
 	// keeper and store must close latest
 	closers = append(closers, opt.Store)
-	closers = append(closers, opt.Keeper)
 }
 
 func readDagFromDir(dir string) error {
