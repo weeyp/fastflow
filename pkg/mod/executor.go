@@ -23,20 +23,20 @@ const (
 	ReasonParentCancel         = "parent success but already be canceled"
 )
 
-// DefExecutor
+// DefExecutor is default executor
 type DefExecutor struct {
-	cancelMap    sync.Map
-	workerNumber int
-	workerQueue  chan *entity.TaskInstance
-	workerWg     sync.WaitGroup
-	initWg       sync.WaitGroup
-	timeout      time.Duration
-	initQueue    chan *initPayload
+	cancelMap    sync.Map                  // map[string]context.CancelFunc
+	workerNumber int                       // number of worker
+	workerQueue  chan *entity.TaskInstance // worker queue
+	workerWg     sync.WaitGroup            // worker wait group
+	initWg       sync.WaitGroup            // init wait group
+	timeout      time.Duration             // default timeout
+	initQueue    chan *initPayload         // init queue
 
-	paramRender *render.TplRender
+	paramRender *render.TplRender // param render
 
-	closeCh chan struct{}
-	lock    sync.RWMutex
+	closeCh chan struct{} // close channel
+	lock    sync.RWMutex  // lock
 }
 
 // initPayload
@@ -45,7 +45,7 @@ type initPayload struct {
 	taskIns *entity.TaskInstance
 }
 
-// NewDefExecutor
+// NewDefExecutor  create a default executor
 func NewDefExecutor(timeout time.Duration, workers int) *DefExecutor {
 	return &DefExecutor{
 		workerNumber: workers,
@@ -57,7 +57,7 @@ func NewDefExecutor(timeout time.Duration, workers int) *DefExecutor {
 	}
 }
 
-// Init
+// Init init executor
 func (e *DefExecutor) Init() {
 	e.initWg.Add(1)
 	go e.watchInitQueue()
@@ -75,7 +75,7 @@ func (e *DefExecutor) subWorkerQueue() {
 	e.workerWg.Done()
 }
 
-// CancelTaskIns
+// CancelTaskIns  cancel task instance
 func (e *DefExecutor) CancelTaskIns(taskInsIds []string) error {
 	for _, id := range taskInsIds {
 		if cancel, ok := e.cancelMap.Load(id); ok {

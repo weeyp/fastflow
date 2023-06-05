@@ -146,8 +146,6 @@ type ListDagInstanceInput struct {
 	UpdatedEnd int64
 	Status     []entity.DagInstanceStatus
 	HasCmd     bool
-	Limit      int64
-	Offset     int64
 }
 
 // ListTaskInstanceInput list task instance input
@@ -155,9 +153,6 @@ type ListTaskInstanceInput struct {
 	IDs      []string
 	DagInsID string
 	Status   []entity.TaskInstanceStatus
-	// query expired tasks(it will calculate task's timeout)
-	Expired     bool
-	SelectField []string
 }
 
 // SetStore set store

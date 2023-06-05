@@ -14,19 +14,19 @@ import (
 	"github.com/weeyp/fastflow/pkg/utils"
 )
 
-// DefParser
+// DefParser is default parser
 type DefParser struct {
-	workerNumber int
-	workerQueue  []chan *entity.TaskInstance
-	workerWg     sync.WaitGroup
-	taskTrees    sync.Map
-	taskTimeout  time.Duration
+	workerNumber int                         // number of worker
+	workerQueue  []chan *entity.TaskInstance // worker queue
+	workerWg     sync.WaitGroup              // worker wait group
+	taskTrees    sync.Map                    // map[string]*TaskTree
+	taskTimeout  time.Duration               // default timeout
 
-	closeCh chan struct{}
-	lock    sync.RWMutex
+	closeCh chan struct{} // close channel
+	lock    sync.RWMutex  // lock
 }
 
-// NewDefParser
+// NewDefParser create a default parser
 func NewDefParser(workerNumber int, taskTimeout time.Duration) *DefParser {
 	return &DefParser{
 		workerNumber: workerNumber,
@@ -36,7 +36,7 @@ func NewDefParser(workerNumber int, taskTimeout time.Duration) *DefParser {
 	}
 }
 
-// Init
+// Init init parser
 func (p *DefParser) Init() {
 	p.workerWg.Add(1)
 	go p.startWatcher(p.watchScheduledDagIns)
@@ -267,7 +267,11 @@ func (p *DefParser) pushTasks(dagIns *entity.DagInstance, ids []string) error {
 
 func (p *DefParser) cancelChildTasks(tree *TaskTree, ids []string) error {
 	walkNode(tree.Root, func(node *TaskNode) bool {
-		if utils.StringsContain(ids, node.TaskInsID) {
+		idis := make([]interface{}, len(ids))
+		for i := range ids {
+			idis[i] = ids[i]
+		}
+		if utils.ConsumerContains(idis, node.TaskInsID) {
 			node.Status = entity.TaskInstanceStatusCanceled
 		}
 		return true

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/weeyp/fastflow/store/cache"
 	"log"
 	"time"
 
@@ -29,15 +30,7 @@ func main() {
 	})
 
 	// init store
-	st := mongoStore.NewStore(&mongoStore.StoreOption{
-		// if your mongo does not set user/pwd, you should remove it
-		ConnStr:  "mongodb://root:pwd@127.0.0.1:27017/fastflow?authSource=admin",
-		Database: "mongo-demo",
-		Prefix:   "test",
-	})
-	if err := st.Init(); err != nil {
-		log.Fatal(fmt.Errorf("init store failed: %w", err))
-	}
+	st := cache.NewMemCache()
 
 	go createDagAndInstance()
 

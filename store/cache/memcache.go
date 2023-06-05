@@ -146,9 +146,6 @@ func (m *MemCache) GetDagInstance(dagInsId string) (*entity.DagInstance, error) 
 }
 
 func (m *MemCache) ListDagInstance(input *mod.ListDagInstanceInput) ([]*entity.DagInstance, error) {
-	// This is a naive implementation of ListDagInstance.
-	// It iterates over all DagInstances and checks whether each one matches the input criteria.
-	// For a large number of DagInstances, this could be slow.
 	var dagInsList []*entity.DagInstance
 	for _, item := range m.dagIns.Items() {
 		dagIns, ok := item.Object.(*entity.DagInstance)
@@ -158,6 +155,15 @@ func (m *MemCache) ListDagInstance(input *mod.ListDagInstanceInput) ([]*entity.D
 		if input.DagID != "" && dagIns.DagID != input.DagID {
 			continue
 		}
+
+		if len(input.Status) > 0 && !utils.ConsumerContains(input.Status, dagIns.Status) {
+			continue
+		}
+
+		if input.HasCmd && dagIns.Cmd == nil {
+			continue
+		}
+
 		// other checks for UpdatedEnd, Status, HasCmd, Limit, Offset
 		dagInsList = append(dagInsList, dagIns)
 	}
@@ -249,19 +255,13 @@ func (m *MemCache) ListTaskInstance(input *mod.ListTaskInstanceInput) ([]*entity
 		if input.DagInsID != "" && taskIns.DagInsID != input.DagInsID {
 			continue
 		}
-		if len(input.Status) > 0 {
-			found := false
-			for _, status := range input.Status {
-				if taskIns.Status == status {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
+		if len(input.Status) > 0 && !utils.ConsumerContains(input.Status, taskIns.Status) {
+			continue
 		}
-		// other checks for IDs, Expired, SelectField
+		if len(input.IDs) > 0 && !utils.StringsContain(input.IDs, taskIns.ID) {
+			continue
+		}
+
 		taskInsList = append(taskInsList, taskIns)
 	}
 	return taskInsList, nil
