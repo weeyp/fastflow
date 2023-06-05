@@ -83,9 +83,8 @@ func (p *DefParser) watchScheduledDagIns() (err error) {
 	}()
 
 	dagIns, err := GetStore().ListDagInstance(&ListDagInstanceInput{
-		Worker: GetKeeper().WorkerKey(),
 		Status: []entity.DagInstanceStatus{
-			entity.DagInstanceStatusScheduled,
+			entity.DagInstanceStatusInit,
 		},
 	})
 	if err != nil {
@@ -108,7 +107,6 @@ func (p *DefParser) watchDagInsCmd() (err error) {
 	}()
 
 	dagIns, err := GetStore().ListDagInstance(&ListDagInstanceInput{
-		Worker: GetKeeper().WorkerKey(),
 		HasCmd: true,
 	})
 	if err != nil {
@@ -133,7 +131,6 @@ func (p *DefParser) goWorker(queue <-chan *entity.TaskInstance) {
 
 func (p *DefParser) initialRunningDagIns() error {
 	dagIns, err := GetStore().ListDagInstance(&ListDagInstanceInput{
-		Worker: GetKeeper().WorkerKey(),
 		Status: []entity.DagInstanceStatus{
 			entity.DagInstanceStatusRunning,
 		},

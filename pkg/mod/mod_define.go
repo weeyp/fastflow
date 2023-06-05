@@ -24,7 +24,7 @@ type Commander interface {
 	CancelTask(taskInsIds []string, ops ...CommandOptSetter) error
 }
 
-// CommandOption
+// CommandOption is used to set command option
 type CommandOption struct {
 	// isSync means commander will watch dag instance's cmd executing situation until it's command is executed
 	// usually command executing time is very short, so async mode is enough,
@@ -48,7 +48,7 @@ var (
 			opt.isSync = true
 		}
 	}
-	// CommSync means commander will watch dag instance's cmd executing situation until it's command is executed
+	// CommSyncTimeout means commander will watch dag instance's cmd executing situation until it's command is executed
 	// usually command executing time is very short, so async mode is enough,
 	// but if you want a sync call, you set it to true
 	CommSyncTimeout = func(duration time.Duration) CommandOptSetter {
@@ -69,28 +69,30 @@ var (
 	}
 )
 
-// SetCommander
+// SetCommander set commander
 func SetCommander(c Commander) {
 	defCommander = c
 }
 
-// GetCommander
+// GetCommander get commander
 func GetCommander() Commander {
 	return defCommander
 }
 
 // Executor is used to execute task
 type Executor interface {
+	// Push ExecuteTaskIns execute task instance
 	Push(dagIns *entity.DagInstance, taskIns *entity.TaskInstance)
+	// CancelTaskIns cancel task instance
 	CancelTaskIns(taskInsIds []string) error
 }
 
-// SetExecutor
+// SetExecutor set executor
 func SetExecutor(e Executor) {
 	defExc = e
 }
 
-// GetExecutor
+// GetExecutor get executor
 func GetExecutor() Executor {
 	return defExc
 }
@@ -122,13 +124,8 @@ type Store interface {
 	Unmarshal(bytes []byte, ptr interface{}) error
 }
 
-// ListDagInput
-type ListDagInput struct {
-}
-
-// ListDagInstanceInput
+// ListDagInstanceInput list dag instance input
 type ListDagInstanceInput struct {
-	Worker     string
 	DagID      string
 	UpdatedEnd int64
 	Status     []entity.DagInstanceStatus
@@ -137,7 +134,7 @@ type ListDagInstanceInput struct {
 	Offset     int64
 }
 
-// ListTaskInstanceInput
+// ListTaskInstanceInput list task instance input
 type ListTaskInstanceInput struct {
 	IDs      []string
 	DagInsID string
@@ -147,12 +144,12 @@ type ListTaskInstanceInput struct {
 	SelectField []string
 }
 
-// SetStore
+// SetStore set store
 func SetStore(e Store) {
 	defStore = e
 }
 
-// GetStore
+// GetStore get store
 func GetStore() Store {
 	return defStore
 }
@@ -163,12 +160,12 @@ type Parser interface {
 	EntryTaskIns(taskIns *entity.TaskInstance)
 }
 
-// SetParser
+// SetParser set parser
 func SetParser(e Parser) {
 	defParser = e
 }
 
-// GetParser
+// GetParser get parser
 func GetParser() Parser {
 	return defParser
 }

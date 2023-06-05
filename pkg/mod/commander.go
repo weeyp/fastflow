@@ -3,7 +3,6 @@ package mod
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 type DefCommander struct {
 }
 
-// RunDag
+// RunDag run dag
 func (c *DefCommander) RunDag(dagId string, specVars map[string]string) (*entity.DagInstance, error) {
 	dag, err := GetStore().GetDag(dagId)
 	if err != nil {
@@ -32,7 +31,7 @@ func (c *DefCommander) RunDag(dagId string, specVars map[string]string) (*entity
 	return dagIns, nil
 }
 
-// RetryDagIns
+// RetryDagIns retry dag instance
 func (c *DefCommander) RetryDagIns(dagInsId string, ops ...CommandOptSetter) error {
 	taskIns, err := GetStore().ListTaskInstance(&ListTaskInstanceInput{
 		DagInsID: dagInsId,
@@ -54,28 +53,18 @@ func (c *DefCommander) RetryDagIns(dagInsId string, ops ...CommandOptSetter) err
 	return c.RetryTask(taskIds, ops...)
 }
 
-// RetryTask
+// RetryTask retry task
 func (c *DefCommander) RetryTask(taskInsIds []string, ops ...CommandOptSetter) error {
 	opt := initOption(ops)
-	return executeCommand(taskInsIds, func(dagIns *entity.DagInstance, isWorkerAlive bool) error {
-		if !isWorkerAlive {
-			aliveNodes, err := GetKeeper().AliveNodes()
-			if err != nil {
-				return err
-			}
-			dagIns.Worker = aliveNodes[rand.Intn(len(aliveNodes))]
-		}
+	return executeCommand(taskInsIds, func(dagIns *entity.DagInstance) error {
 		return dagIns.Retry(taskInsIds)
 	}, opt)
 }
 
-// CancelTask
+// CancelTask cancel task
 func (c *DefCommander) CancelTask(taskInsIds []string, ops ...CommandOptSetter) error {
 	opt := initOption(ops)
-	return executeCommand(taskInsIds, func(dagIns *entity.DagInstance, isWorkerAlive bool) error {
-		if !isWorkerAlive {
-			return fmt.Errorf("worker is not healthy, you can not cancel it")
-		}
+	return executeCommand(taskInsIds, func(dagIns *entity.DagInstance) error {
 		return dagIns.Cancel(taskInsIds)
 	}, opt)
 }
@@ -91,7 +80,7 @@ func initOption(opSetter []CommandOptSetter) (opt CommandOption) {
 
 func executeCommand(
 	taskInsIds []string,
-	perform func(dagIns *entity.DagInstance, isWorkerAlive bool) error,
+	perform func(dagIns *entity.DagInstance) error,
 	opt CommandOption) error {
 	if len(taskInsIds) == 0 {
 		return errors.New("here is no any task by give task's ids")
@@ -133,18 +122,13 @@ func executeCommand(
 		return err
 	}
 
-	isWorkerAlive, err := GetKeeper().IsAlive(dagIns.Worker)
-	if err != nil {
-		return err
-	}
-
-	if err := perform(dagIns, isWorkerAlive); err != nil {
+	if err := perform(dagIns); err != nil {
 		return err
 	}
 	if err := GetStore().PatchDagIns(&entity.DagInstance{
-		BaseInfo: dagIns.BaseInfo,
-		Worker:   dagIns.Worker,
-		Cmd:      dagIns.Cmd,
+		ID:     dagIns.ID,
+		Worker: dagIns.Worker,
+		Cmd:    dagIns.Cmd,
 	}); err != nil {
 		return err
 	}
