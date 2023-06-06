@@ -1,11 +1,27 @@
 package mod
 
 import (
+	"context"
 	"time"
 
 	"github.com/weeyp/fastflow/pkg/entity"
 	"github.com/weeyp/fastflow/pkg/entity/run"
 )
+
+type CtxKey string
+
+const (
+	CtxKeyRunningTaskIns CtxKey = "running-task"
+)
+
+func CtxWithRunningTaskIns(ctx context.Context, task *entity.TaskInstance) context.Context {
+	return context.WithValue(ctx, CtxKeyRunningTaskIns, task)
+}
+
+func CtxRunningTaskIns(ctx context.Context) (*entity.TaskInstance, bool) {
+	ins, ok := ctx.Value(CtxKeyRunningTaskIns).(*entity.TaskInstance)
+	return ins, ok
+}
 
 var (
 	ActionMap = map[string]run.Action{}

@@ -186,8 +186,8 @@ func (p *DefParser) InitialDagIns(dagIns *entity.DagInstance) {
 		}
 
 		if err := GetStore().PatchDagIns(&entity.DagInstance{
-			BaseInfo: entity.BaseInfo{ID: dagIns.ID},
-			Status:   dagIns.Status}); err != nil {
+			ID:     dagIns.ID,
+			Status: dagIns.Status}); err != nil {
 			log.Errorf("patch dag instance[%s] failed: %s", dagIns.ID, err)
 			return
 		}
@@ -235,9 +235,9 @@ func (p *DefParser) executeNext(taskIns *entity.TaskInstance) error {
 		// tree has already completed, delete from map
 		p.taskTrees.Delete(taskIns.DagInsID)
 		if err := GetStore().PatchDagIns(&entity.DagInstance{
-			BaseInfo: entity.BaseInfo{ID: tree.DagIns.ID},
-			Status:   tree.DagIns.Status,
-			Reason:   tree.DagIns.Reason,
+			ID:     tree.DagIns.ID,
+			Status: tree.DagIns.Status,
+			Reason: tree.DagIns.Reason,
 		}); err != nil {
 			return err
 		}
@@ -275,9 +275,9 @@ func (p *DefParser) cancelChildTasks(tree *TaskTree, ids []string) error {
 
 	for _, id := range ids {
 		if err := GetStore().PatchTaskIns(&entity.TaskInstance{
-			BaseInfo: entity.BaseInfo{ID: id},
-			Status:   entity.TaskInstanceStatusCanceled,
-			Reason:   ReasonParentCancel,
+			ID:     id,
+			Status: entity.TaskInstanceStatusCanceled,
+			Reason: ReasonParentCancel,
 		}); err != nil {
 			return err
 		}
@@ -346,7 +346,7 @@ func (p *DefParser) workerDo(taskIns *entity.TaskInstance) error {
 }
 
 func (p *DefParser) parseScheduleDagIns(dagIns *entity.DagInstance) error {
-	if dagIns.Status == entity.DagInstanceStatusScheduled {
+	if dagIns.Status == entity.DagInstanceStatusInit {
 		dag, err := GetStore().GetDag(dagIns.DagID)
 		if err != nil {
 			return err
@@ -388,9 +388,9 @@ func (p *DefParser) parseScheduleDagIns(dagIns *entity.DagInstance) error {
 
 		dagIns.Run()
 		if err := GetStore().PatchDagIns(&entity.DagInstance{
-			BaseInfo: dagIns.BaseInfo,
-			Status:   dagIns.Status,
-			Reason:   dagIns.Reason,
+			ID:     dagIns.ID,
+			Status: dagIns.Status,
+			Reason: dagIns.Reason,
 		}, "Reason"); err != nil {
 			return err
 		}
@@ -439,10 +439,10 @@ func (p *DefParser) parseCmd(dagIns *entity.DagInstance) (err error) {
 
 		dagIns.Cmd = nil
 		if err := GetStore().PatchDagIns(&entity.DagInstance{
-			BaseInfo: dagIns.BaseInfo,
-			Status:   dagIns.Status,
-			Cmd:      dagIns.Cmd,
-			Reason:   dagIns.Reason,
+			ID:     dagIns.ID,
+			Status: dagIns.Status,
+			Cmd:    dagIns.Cmd,
+			Reason: dagIns.Reason,
 		}, "Cmd", "Reason"); err != nil {
 			return err
 		}

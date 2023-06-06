@@ -11,7 +11,7 @@ const (
 	virtualTaskRootID = "_virtual_root"
 )
 
-// TaskInfoGetter
+// TaskInfoGetter get task info
 type TaskInfoGetter interface {
 	GetDepend() []string
 	GetID() string
@@ -19,7 +19,7 @@ type TaskInfoGetter interface {
 	GetStatus() entity.TaskInstanceStatus
 }
 
-// MapTaskInsToGetter
+// MapTaskInsToGetter map task instance to getter
 func MapTaskInsToGetter(taskIns []*entity.TaskInstance) (ret []TaskInfoGetter) {
 	for i := range taskIns {
 		ret = append(ret, taskIns[i])
@@ -27,7 +27,7 @@ func MapTaskInsToGetter(taskIns []*entity.TaskInstance) (ret []TaskInfoGetter) {
 	return
 }
 
-// MapTasksToGetter
+// MapTasksToGetter map tasks to getter
 func MapTasksToGetter(taskIns []entity.Task) (ret []TaskInfoGetter) {
 	for i := range taskIns {
 		ret = append(ret, &taskIns[i])
@@ -35,15 +35,7 @@ func MapTasksToGetter(taskIns []entity.Task) (ret []TaskInfoGetter) {
 	return
 }
 
-// MapMockTasksToGetter
-func MapMockTasksToGetter(taskIns []*MockTaskInfoGetter) (ret []TaskInfoGetter) {
-	for i := range taskIns {
-		ret = append(ret, taskIns[i])
-	}
-	return
-}
-
-// MustBuildRootNode
+// MustBuildRootNode must build root node
 func MustBuildRootNode(tasks []TaskInfoGetter) *TaskNode {
 	root, err := BuildRootNode(tasks)
 	if err != nil {
@@ -52,7 +44,7 @@ func MustBuildRootNode(tasks []TaskInfoGetter) *TaskNode {
 	return root
 }
 
-// BuildRootNode
+// BuildRootNode build root node
 func BuildRootNode(tasks []TaskInfoGetter) (*TaskNode, error) {
 	root := &TaskNode{
 		TaskInsID: virtualTaskRootID,
@@ -104,13 +96,13 @@ func buildGraphNodeMap(tasks []TaskInfoGetter) (map[string]*TaskNode, error) {
 	return m, nil
 }
 
-// TaskTree
+// TaskTree task tree
 type TaskTree struct {
 	DagIns *entity.DagInstance
 	Root   *TaskNode
 }
 
-// NewTaskNodeFromGetter
+// NewTaskNodeFromGetter new task node from getter
 func NewTaskNodeFromGetter(instance TaskInfoGetter) *TaskNode {
 	return &TaskNode{
 		TaskInsID: instance.GetID(),
@@ -118,7 +110,7 @@ func NewTaskNodeFromGetter(instance TaskInfoGetter) *TaskNode {
 	}
 }
 
-// TaskNode
+// TaskNode task node
 type TaskNode struct {
 	TaskInsID string
 	Status    entity.TaskInstanceStatus
@@ -136,7 +128,7 @@ const (
 	TreeStatusBlocked TreeStatus = "blocked"
 )
 
-// HasCycle
+// HasCycle check cycle
 func (t *TaskNode) HasCycle() (cycleStart *TaskNode) {
 	visited, incomplete := map[string]struct{}{}, map[string]*TaskNode{}
 	waitQueue := []*TaskNode{t}
@@ -181,7 +173,7 @@ func bfsCheckCycle(waitQueue []*TaskNode, visited map[string]struct{}, incomplet
 	return
 }
 
-// ComputeStatus
+// ComputeStatus compute status
 func (t *TaskNode) ComputeStatus() (status TreeStatus, srcTaskInsId string) {
 	walkNode(t, func(node *TaskNode) bool {
 		switch node.Status {
@@ -239,17 +231,17 @@ func dfsWalk(
 	return true
 }
 
-// AppendChild
+// AppendChild append child
 func (t *TaskNode) AppendChild(task *TaskNode) {
 	t.children = append(t.children, task)
 }
 
-// AppendParent
+// AppendParent append parent
 func (t *TaskNode) AppendParent(task *TaskNode) {
 	t.parents = append(t.parents, task)
 }
 
-// CanExecuteChild
+// CanExecuteChild check whether task could execute child
 func (t *TaskNode) CanExecuteChild() bool {
 	return t.Status == entity.TaskInstanceStatusSuccess || t.Status == entity.TaskInstanceStatusSkipped
 }
@@ -279,7 +271,7 @@ func (t *TaskNode) GetExecutableTaskIds() (executables []string) {
 	return
 }
 
-// GetNextTaskIds
+// GetNextTaskIds get next task ids
 func (t *TaskNode) GetNextTaskIds(completedOrRetryTask *entity.TaskInstance) (executable []string, find bool) {
 	walkNode(t, func(node *TaskNode) bool {
 		if completedOrRetryTask.ID == node.TaskInsID {
@@ -307,7 +299,7 @@ func (t *TaskNode) GetNextTaskIds(completedOrRetryTask *entity.TaskInstance) (ex
 	return
 }
 
-// Executable
+// Executable check whether task could be executed
 func (t *TaskNode) Executable() bool {
 	if t.Status == entity.TaskInstanceStatusInit ||
 		t.Status == entity.TaskInstanceStatusRetrying ||
