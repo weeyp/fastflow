@@ -8,6 +8,10 @@ import (
 
 var generator *sonyflake.Sonyflake
 
+func init() {
+	InitFlakeGenerator(1)
+}
+
 // InitFlakeGenerator init flake generator
 func InitFlakeGenerator(machineId uint16) {
 	generator = sonyflake.NewSonyflake(sonyflake.Settings{

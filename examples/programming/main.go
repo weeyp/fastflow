@@ -73,7 +73,7 @@ func createDagAndInstance() {
 		if err := mod.GetStore().CreateDagIns(dagInstance); err != nil {
 			log.Fatal(err)
 		}
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 1)
 	}
 }
 

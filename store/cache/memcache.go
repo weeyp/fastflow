@@ -6,7 +6,9 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/weeyp/fastflow/pkg/entity"
 	"github.com/weeyp/fastflow/pkg/mod"
+	"github.com/weeyp/fastflow/pkg/utils"
 	"github.com/weeyp/fastflow/pkg/utils/data"
+	"github.com/weeyp/fastflow/store"
 	"reflect"
 )
 
@@ -49,6 +51,9 @@ func (m *MemCache) updateItem(id string, item interface{}, c *cache.Cache) error
 }
 
 func (m *MemCache) CreateDag(dag *entity.Dag) error {
+	if dag.ID == "" {
+		dag.ID = store.NextStringID()
+	}
 	return m.createItem(dag.ID, dag, m.dags)
 }
 
@@ -66,6 +71,9 @@ func (m *MemCache) GetDag(dagId string) (*entity.Dag, error) {
 }
 
 func (m *MemCache) CreateDagIns(dagIns *entity.DagInstance) error {
+	if dagIns.ID == "" {
+		dagIns.ID = store.NextStringID()
+	}
 	return m.createItem(dagIns.ID, dagIns, m.dagIns)
 }
 
@@ -82,15 +90,31 @@ func (m *MemCache) PatchDagIns(dagIns *entity.DagInstance, mustsPatchFields ...s
 	}
 
 	// Use reflection to patch fields
+	filedSlice := []string{"Status", "Reason", "Cmd", "ShareData"}
 	dagInsValue := reflect.ValueOf(dagIns).Elem()
 	oldDagInsValue := reflect.ValueOf(oldDagIns).Elem()
 
-	for _, field := range mustsPatchFields {
-		oldField := oldDagInsValue.FieldByName(field)
-		newField := dagInsValue.FieldByName(field)
+	for _, fieldName := range filedSlice {
+		oldField := oldDagInsValue.FieldByName(fieldName)
+		newField := dagInsValue.FieldByName(fieldName)
 
+		// Check that the fields are valid
 		if oldField.IsValid() && newField.IsValid() {
-			oldField.Set(newField)
+			switch fieldName {
+			case "Status", "Reason": // string fields
+				if newField.String() != "" {
+					oldField.Set(newField)
+				}
+			case "ShareData": // slice field
+				if !newField.IsNil() {
+					oldField.Set(newField)
+				}
+			case "Cmd": // map field
+				if utils.StringsContain(mustsPatchFields, "Cmd") || !newField.IsNil() {
+					oldField.Set(newField)
+				}
+			}
+
 		}
 	}
 
@@ -142,7 +166,10 @@ func (m *MemCache) ListDagInstance(input *mod.ListDagInstanceInput) ([]*entity.D
 
 func (m *MemCache) BatchCreatTaskIns(taskIns []*entity.TaskInstance) error {
 	for _, ti := range taskIns {
-		err := m.createItem(ti.TaskID, ti, m.taskIns)
+		if ti.ID == "" {
+			ti.ID = store.NextStringID()
+		}
+		err := m.createItem(ti.ID, ti, m.taskIns)
 		if err != nil {
 			return err
 		}
@@ -152,7 +179,7 @@ func (m *MemCache) BatchCreatTaskIns(taskIns []*entity.TaskInstance) error {
 
 func (m *MemCache) PatchTaskIns(taskIns *entity.TaskInstance) error {
 	// Get the existing TaskInstance
-	oldTaskInsInterface, found := m.taskIns.Get(taskIns.TaskID)
+	oldTaskInsInterface, found := m.taskIns.Get(taskIns.ID)
 	if !found {
 		return data.ErrDataNotFound
 	}
@@ -165,30 +192,39 @@ func (m *MemCache) PatchTaskIns(taskIns *entity.TaskInstance) error {
 	// Use reflection to patch fields
 	taskInsValue := reflect.ValueOf(taskIns).Elem()
 	oldTaskInsValue := reflect.ValueOf(oldTaskIns).Elem()
+	filedSlice := []string{"Status", "Reason", "Traces"}
 
-	typeOfTaskIns := taskInsValue.Type()
-	for i := 0; i < taskInsValue.NumField(); i++ {
-		field := typeOfTaskIns.Field(i).Name
-		oldField := oldTaskInsValue.FieldByName(field)
-		newField := taskInsValue.FieldByName(field)
+	for _, fieldName := range filedSlice {
+		oldField := oldTaskInsValue.FieldByName(fieldName)
+		newField := taskInsValue.FieldByName(fieldName)
 
+		// Check that the fields are valid
 		if oldField.IsValid() && newField.IsValid() {
-			oldField.Set(newField)
+			switch fieldName {
+			case "Status", "Reason": // string fields
+				if newField.String() != "" {
+					oldField.Set(newField)
+				}
+			case "Traces": // slice field
+				if newField.Len() > 0 {
+					oldField.Set(newField)
+				}
+			}
 		}
 	}
 
 	// Save the updated TaskInstance back to the cache
-	m.taskIns.Set(taskIns.TaskID, oldTaskIns, cache.NoExpiration)
+	m.taskIns.Set(taskIns.ID, oldTaskIns, cache.NoExpiration)
 	return nil
 }
 
 func (m *MemCache) UpdateTaskIns(taskIns *entity.TaskInstance) error {
-	return m.updateItem(taskIns.TaskID, taskIns, m.taskIns)
+	return m.updateItem(taskIns.ID, taskIns, m.taskIns)
 }
 
 func (m *MemCache) BatchUpdateTaskIns(taskIns []*entity.TaskInstance) error {
 	for _, ti := range taskIns {
-		err := m.updateItem(ti.TaskID, ti, m.taskIns)
+		err := m.updateItem(ti.ID, ti, m.taskIns)
 		if err != nil {
 			return err
 		}
@@ -239,4 +275,13 @@ func (m *MemCache) Marshal(obj interface{}) ([]byte, error) {
 func (m *MemCache) Unmarshal(bytes []byte, ptr interface{}) error {
 	// []byte反序列化为结构体
 	return json.Unmarshal(bytes, ptr)
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
