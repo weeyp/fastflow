@@ -145,7 +145,7 @@ func (p *DefParser) initialRunningDagIns() error {
 	return nil
 }
 
-// InitialDagIns
+// InitialDagIns convert dag instance to task tree, and compute executableTaskIds to execute task
 func (p *DefParser) InitialDagIns(dagIns *entity.DagInstance) {
 	tasks, err := GetStore().ListTaskInstance(&ListTaskInstanceInput{
 		DagInsID: dagIns.ID,
@@ -154,11 +154,9 @@ func (p *DefParser) InitialDagIns(dagIns *entity.DagInstance) {
 		log.Errorf("dag instance[%s] list task instance failed: %s", dagIns.ID, err)
 		return
 	}
-
 	if len(tasks) == 0 {
 		return
 	}
-
 	root, err := BuildRootNode(MapTaskInsToGetter(tasks))
 	if err != nil {
 		log.Errorf("dag instance[%s] build task tree failed: %s", dagIns.ID, err)
@@ -267,11 +265,7 @@ func (p *DefParser) pushTasks(dagIns *entity.DagInstance, ids []string) error {
 
 func (p *DefParser) cancelChildTasks(tree *TaskTree, ids []string) error {
 	walkNode(tree.Root, func(node *TaskNode) bool {
-		idis := make([]interface{}, len(ids))
-		for i := range ids {
-			idis[i] = ids[i]
-		}
-		if utils.ConsumerContains(idis, node.TaskInsID) {
+		if utils.StringsContain(ids, node.TaskInsID) {
 			node.Status = entity.TaskInstanceStatusCanceled
 		}
 		return true
@@ -349,6 +343,7 @@ func (p *DefParser) workerDo(taskIns *entity.TaskInstance) error {
 	return p.executeNext(taskIns)
 }
 
+// use dag instance make task instance
 func (p *DefParser) parseScheduleDagIns(dagIns *entity.DagInstance) error {
 	if dagIns.Status == entity.DagInstanceStatusInit {
 		dag, err := GetStore().GetDag(dagIns.DagID)
